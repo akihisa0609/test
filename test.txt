@@ -1,0 +1,54 @@
+  volatile uint32_t tmpreg = 0x00U;
+  /* Configure Flash prefetch, Instruction cache, Data cache */ 
+	FLASH->ACR |= (FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_PRFTEN);
+    tmpreg = FLASH->ACR;
+   (void)(tmpreg);
+
+
+	tmpreg = FLASH->ACR;
+	tmpreg &= ~FLASH_ACR_LATENCY;
+	tmpreg |= FLASH_ACR_LATENCY_2WS;
+	FLASH->ACR = tmpreg;
+   (void)(tmpreg);
+
+  /** Configure the main internal regulator output voltage
+  */
+  RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+  /* Delay after an RCC peripheral clock enabling */
+  tmpreg = RCC->APB1ENR;
+  (void)(tmpreg);
+
+  tmpreg = PWR->CR;
+  tmpreg &= ~PWR_CR_VOS;
+  tmpreg |= PWR_CR_VOS_1;
+  PWR->CR = tmpreg;
+
+  tmpreg = PWR->CR;
+  (void)(tmpreg);
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC->CR |= RCC_CR_HSEBYP;
+  RCC->CR |= RCC_CR_HSEON;
+
+  do {
+	tmpreg = RCC->CR;
+  } while (!(tmpreg & RCC_CR_HSERDY));
+
+  tmpreg = RCC->PLLCFGR;
+  tmpreg &= ~(RCC_PLLCFGR_PLLSRC | RCC_PLLCFGR_PLLM | RCC_PLLCFGR_PLLN);
+  tmpreg |= (RCC_PLLCFGR_PLLSRC_HSE | RCC_PLLCFGR_PLLM_3 | (336 << RCC_PLLCFGR_PLLN_Pos));
+  RCC->PLLCFGR = tmpreg;
+
+  tmpreg = RCC->PLLCFGR;
+  tmpreg &= ~RCC_PLLCFGR_PLLP;
+  tmpreg |= RCC_PLLCFGR_PLLP_0;
+  RCC->PLLCFGR = tmpreg;
+
+  RCC->CR |= RCC_CR_PLLON;
+
+  do {
+	tmpreg = RCC->CR;
+  } while (!(tmpreg & RCC_CR_PLLRDY));
+
